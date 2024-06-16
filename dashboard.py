@@ -8,28 +8,16 @@ import dearpygui.dearpygui as dpg
 import xda_device as xd
 from sensors import dancers, plot_log
 
+from utils import log
 
 class Dashboard:
-    """Class for Sonic Move Biodata Sonata dashboard.
-    Argument and function names describe what is happening.
-    A few additional comments have been added for readability.
-    Methods
-    ----------
-    __init__
-    set_threshold
-    show_file_dialog
-    file_dialog_callback
-    file_dialog_cancel
-    setup
-    """
-
+    """Class for Sonic Move Biodata Sonata dashboard."""
     
     def __init__(self, device, path):
-        """Initialises a dashboard for Sonic Move Biodata Sonata.
-        Parameters
+        """Parameters
         ----------
         device : str
-            'dongle' or 'station' Xsens main device. Default is 'station'.
+            'dongle' or 'station' Xsens main device.
         path : str
             File path for saving log files. Recommendation is to create a 
             folder just for the logs. 
@@ -42,98 +30,71 @@ class Dashboard:
         self.setup()
         self.main_device = xd.XdaDevice(device, path)
 
-    
     def set_threshold(self, sender, app_data):
-        
         self.main_device.acc_threshold = dpg.get_value(sender)
-
     
     def show_file_dialog(self, sender, app_data):
-        
         dpg.show_item('file_dialog')
-
     
     def file_dialog_callback(self, sender, app_data):
-        
         log_file_path = app_data['file_path_name']
         data_dicts = dancers()
         axes = ['x', 'y', 'z']
         plot_log(log_file_path, data_dicts, axes)
-
     
     #def file_dialog_cancel(self, sender, app_data):
     #    pass
     
-    
     def recording_switch(self, sender, app_data):
-    
         self.main_device.recording = not self.main_device.recording
+
         if self.main_device.recording:
             self.main_device.create_control_object()
             self.main_device.open_device()
             self.main_device.configure_device()
             self.main_device.go_to_recording_mode()        
-            recording_loop_thread = threading.Thread(
-                    target=self.main_device.recording_loop, daemon=True
-            )
-            recording_loop_thread.start()  
+            recording_loop_thread = threading.Thread(target=self.main_device.recording_loop, daemon=True)
+            recording_loop_thread.start()
     
     def reset_orientation(self, sender, app_data):
         self.main_device.resetOri = True 
     
     def exit_program(self, sender, app_data):
-        
-        dpg.set_value(
-            'program_status', 'Program exited by user.\n\n'
-            f'{dpg.get_value("program_status")}'
-        )
-        print('Program exited by user.')
+        log('program_status', 'Program exited by user.\n')
+
         try:
             self.main_device.device.disableRadio()
         except Exception as e:
-            dpg.set_value(
-                'program_status', 'Radio disabling failed.' 
-                ' Perhaps it was not on.'
-                f'{dpg.get_value("program_status")}'
-            )
-            print('Radio disabling failed. Perhaps it was not on.')            
+            log('program_status', 'Radio disabling failed. Perhaps it was not on.')
         sys.exit(0)        
-
     
     def setup(self):
         """setup creates a Dear PyGui dashboard. """
         
         initial_data = [0] * 500
         dpg.create_context()
-        vp = dpg.create_viewport(title='Sonify dashboard')
+        vp = dpg.create_viewport(title='Xsens dashboard')
         vp_width = dpg.get_viewport_width()
         window_lbl = ['one', 'two', 'three']
         window_pos = [(45,300), (25,320), (5,340)]
         x_axis = list(range(500))
+
         # Create program status display window.
         with dpg.window(label='Recording panel', pos=(25,0), width=vp_width):
-            dpg.add_button(
-                label='Recording on/off', callback=self.recording_switch
-            )            
-            dpg.add_button(
-                label='Plot txt log file', callback=self.show_file_dialog
-            )
+            dpg.add_button(label='Recording on/off', callback=self.recording_switch)            
+            dpg.add_button(label='Plot txt log file', callback=self.show_file_dialog)
             dpg.add_button(label='Quit', callback=self.exit_program)
-            dpg.add_button(
-                label='Reset Orientation', callback=self.reset_orientation
-            )
+            dpg.add_button(label='Reset Orientation', callback=self.reset_orientation)
             dpg.add_text(
-                'Use mouse to scroll down program message history. First'
-                ' message is in the bottom row.'
+                'Use mouse to scroll down program message history.' +
+                'First message is in the bottom row.'
             )
             dpg.add_input_text(
                 tag='program_status', width=vp_width, multiline=True
             )
             
         # Create sensor status display window.
-        with dpg.window(
-            label='Sensor status panel', pos=(25,195), width=vp_width
-        ):
+        with dpg.window(label='Sensor status panel', pos=(25,195), width=vp_width):
             with dpg.table(header_row=False):
                 for i in range(9):
                     dpg.add_table_column()
@@ -143,14 +104,13 @@ class Dashboard:
                 with dpg.table_row():
                     for i in range(9):
                         dpg.add_text('No signal', tag=f'sensor_{i}')
-            dpg.add_text(
-                'Click on plot legend variables to show or hide related data'
-            )
+            dpg.add_text('Click on plot legend variables to show or hide related data')
+
         # Create a window for sensors of each dancer.
         for i in range(3):
             with dpg.window(
-                    label=f'Dancer {window_lbl[i]}', pos=window_pos[i],
-                    width=vp_width, collapsed=True
+                label=f'Dancer {window_lbl[i]}', pos=window_pos[i],
+                width=vp_width, collapsed=True
             ):
                 with dpg.table(header_row=False):
                     # Three columns and two rows for six data types.
@@ -323,5 +283,3 @@ class Dashboard:
             width=800 ,height=500
         ):
             dpg.add_file_extension('.txt', color=(0, 255, 0, 255))
-       
-            
