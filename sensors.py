@@ -17,6 +17,9 @@ def dancers(number_of_dancers=1, number_of_sensors=3):
     -------
     dancers: list
         A list of dictionaries of dictionaries for sensor data of each dancer.
+        Each dancer has a sensor dictionary with a key for every sensor.
+        Each value in the dictionary is a sensor data dictionary with a key
+        for each data label.
     """
 
     #TODO: make the initialization of dancers respect the number of sensors per dancer
@@ -59,6 +62,20 @@ def dancers(number_of_dancers=1, number_of_sensors=3):
     return dancers
 
 class Sensors:
+    # locations[x][1]: dancers 1, 2 and 3. This seems to be the dancer number. (Tturna 2024.6.16)
+    # locations[x][2]: 1 for left, 2 for right, 3 for torso. This is the sensor number I guess.
+    locations = {
+        '00B4F115' : ['left', 1, 1], # dancer 1 left etc.
+        '00B4F116' : ['right', 1, 2],
+        '00B4F11D'  : ['torso', 1, 3]
+        #'00B42D56' : ['left', 2, 1],
+        #'00B42D32' : ['right', 2, 2],
+        #'00B42D44' : ['torso', 2, 3],
+        #'00B42D54' : ['left', 3, 1],
+        #'00B42D4E' : ['right', 3, 2],
+        #'00B42B48' : ['torso', 3, 3]
+    }
+
     def __init__(self):
         """Parameters
         --------------
@@ -82,19 +99,6 @@ class Sensors:
         
         self.axes  = ['x', 'y', 'z']
         self.sensors = None
-        # locations[1]: dancers 1, 2 and 3.
-        # locations[2]: 1 for left, 2 for right, 3 for torso.
-        self.locations = {
-            '00B4F115' : ['left', 1, 1], # dancer 1 left etc.
-            '00B4F116' : ['right', 1, 2],
-            '00B4F11D'  : ['torso', 1, 3]
-           #'00B42D56' : ['left', 2, 1],
-           #'00B42D32' : ['right', 2, 2],
-           #'00B42D44' : ['torso', 2, 3],
-           #'00B42D54' : ['left', 3, 1],
-           #'00B42D4E' : ['right', 3, 2],
-           #'00B42B48' : ['torso', 3, 3]
-        }
         self.labels = [
             ('acc','Acceleration'), ('tot_a', 'Total Acceleration'),
             ('ori', 'Orientation'), ('gyr', 'Gyroscope'), 
@@ -125,8 +129,8 @@ class Sensors:
         
         for i, sensor in enumerate(self.sensors):
             sensor_id = f'{sensor.deviceId()}'        
-            w = self.locations[sensor_id][1]
-            k = self.locations[sensor_id][2]
+            w = Sensors.locations[sensor_id][1]
+            k = Sensors.locations[sensor_id][2]
             self.minmax[i]['id'] = sensor_id
 
             for j in range(6):
@@ -160,24 +164,24 @@ class Sensors:
     def send_data(self, sensor_id, data_type, value):
         """send_data sends sensor data and IDS to the dashboard plots."""
         
-        s_idx = self.locations[sensor_id][2]
-        d_idx = self.locations[sensor_id][1] - 1
+        s_idx = Sensors.locations[sensor_id][2]
+        d_idx = Sensors.locations[sensor_id][1] - 1
         sensor_key = f'snsr_{s_idx}'
 
         # Set xyz coordinate data to their plots.
         if data_type in ['acc', 'gyr', 'mag']:
             for i, val in enumerate(value):
-                data_key = f'{data_type}_{self.axes[i]}'
+                data_label = f'{data_type}_{self.axes[i]}'
 
-                self.dancers[d_idx][sensor_key][data_key].append(val)
-                cutoff = len(self.dancers[d_idx][sensor_key][data_key]) - 500
+                self.dancers[d_idx][sensor_key][data_label].append(val)
+                cutoff = len(self.dancers[d_idx][sensor_key][data_label]) - 500
 
                 if cutoff > 0:
-                    del self.dancers[d_idx][sensor_key][data_key][0]
+                    del self.dancers[d_idx][sensor_key][data_label][0]
 
                 dpg.configure_item(
                     f'{data_type}{d_idx}_{s_idx}{self.axes[i]}',
-                    y = self.dancers[d_idx][sensor_key][data_key]
+                    y = self.dancers[d_idx][sensor_key][data_label]
                 )
         # Set Euler angles data to its plot.
         elif data_type == 'ori':
@@ -186,15 +190,15 @@ class Sensors:
             self.dancers[d_idx][sensor_key][f'{data_type}_y'].append(value[2])
 
             for pry in ['p', 'r', 'y']:
-                data_key = f'{data_type}_{pry}'
-                cutoff = len(self.dancers[d_idx][sensor_key][data_key]) - 500
+                data_label = f'{data_type}_{pry}'
+                cutoff = len(self.dancers[d_idx][sensor_key][data_label]) - 500
 
                 if cutoff > 0:
-                    del self.dancers[d_idx][sensor_key][data_key][0]
+                    del self.dancers[d_idx][sensor_key][data_label][0]
 
                 dpg.configure_item(
                     f'{data_type}{d_idx}_{s_idx}{pry}',
-                    y = self.dancers[d_idx][sensor_key][data_key]
+                    y = self.dancers[d_idx][sensor_key][data_label]
                 )
         # Set rate of turn data to its plot.
         elif data_type == 'rot':
@@ -389,7 +393,6 @@ class Sensors:
             else:
                 dpg.set_value(f'sensor_{i}', 'Measuring')
 
-# This looks way too hard coded to ever work (Tturna 2024.6.16)
 def plot_log(file_path, dancers, axes):
     """plot_log plots a txt log file from the dashboard file dialog.
     One line in the txt log file written by XdaDevice class
@@ -397,68 +400,47 @@ def plot_log(file_path, dancers, axes):
     data packet sent by a sensor.
     """
     
-    # locations[1]: dancers 1,2 and 3.
-    # locations[2]: 1 for left, 2 for right, 3 for torso.
-    locations = {
-        '00B4F115' : ['left', 1, 1], # dancer 1 left etc.
-        '00B4F116' : ['right', 1, 2],
-        '00B4F11D' : ['torso', 1, 3]
-       # '00B42D56' : ['left', 2, 1],
-       # '00B42D32' : ['right', 2, 2],
-       # '00B42D44' : ['torso', 2, 3],
-       # '00B42D54' : ['left', 3, 1],
-       # '00B42D4E' : ['right', 3, 2],
-       # '00B42B48' : ['torso', 3, 3]
-    }    
+    locations = Sensors.locations
+    
+    # TODO: Surely this doesn't have to be so hard coded. (Tturna 2024.6.16)
     with open(file_path, 'r') as log:
         sensor_id = None
         for line in log.readlines():
-            if line.split()[0] == '11:':
+            split = line.split()
+
+            if split[0] == '11:':
                 sensor_id = '00B4F115'
-            elif line.split()[0] == '12:':
+            elif split[0] == '12:':
                 sensor_id = '00B4F116'
-            elif line.split()[0] == '13:':
+            elif split[0] == '13:':
                 sensor_id = '00B4F11D'
-            #elif line.split()[0] == '21:':
-            #    sensor_id = '00B42D56'
-            #elif line.split()[0] == '22:':
-            #    sensor_id = '00B42D32'
-            #elif line.split()[0] == '23:':
-            #    sensor_id = '00B42D44'
-            #elif line.split()[0] == '31:':
-            #    sensor_id = '00B42D54'
-            #elif line.split()[0] == '32:':
-            #    sensor_id = '00B42D4E'
-            #elif line.split()[0] == '33:':
-            #    sensor_id = '00B42B48'
-            acc_value  = line.split(': ')[1:4]
-            acc_value = [float(val) for val in acc_value]
-            tot_a_value = [float(line.split(': ')[4]), 0]
-            gyr_value = line.split(': ')[5:8]
-            gyr_value = [float(val) for val in gyr_value]
-            rot_value = [float(line.split(': ')[8])]
-            mag_value = line.split(': ')[9:12]
-            mag_value = [float(val) for val in mag_value]
-            euler_value = line.split(': ')[12:15]
-            euler_value = [float(val) for val in euler_value]
-            send_log_data(
-                sensor_id, 'acc', acc_value, dancers, locations, axes
-            )
-            send_log_data(
-                sensor_id, 'tot_a', tot_a_value, dancers, locations, axes
-            )
-            send_log_data(
-                sensor_id, 'gyr', gyr_value, dancers, locations, axes
-            )
-            send_log_data(
-                sensor_id, 'rot', rot_value, dancers, locations, axes
-            )
-            send_log_data(
-                sensor_id, 'mag', mag_value, dancers, locations, axes
-            )
-            send_log_data(
-                sensor_id, 'ori', euler_value, dancers, locations, axes
-            )
+            elif split[0] == '21:':
+                sensor_id = '00B42D56'
+            elif split[0] == '22:':
+                sensor_id = '00B42D32'
+            elif split[0] == '23:':
+                sensor_id = '00B42D44'
+            elif split[0] == '31:':
+                sensor_id = '00B42D54'
+            elif split[0] == '32:':
+                sensor_id = '00B42D4E'
+            elif split[0] == '33:':
+                sensor_id = '00B42B48'
+
+            split = line.split(': ')
+            acc_value = [float(val) for val in split[1:4]]
+            tot_a_value = [float(split[4]), 0]
+            gyr_value = [float(val) for val in split[5:8]]
+            rot_value = [float(split[8])]
+            mag_value = [float(val) for val in split[9:12]]
+            euler_value = [float(val) for val in split[12:15]]
+
+            send_log_data(sensor_id, 'acc', acc_value, dancers, locations, axes)
+            send_log_data(sensor_id, 'tot_a', tot_a_value, dancers, locations, axes)
+            send_log_data(sensor_id, 'gyr', gyr_value, dancers, locations, axes)
+            send_log_data(sensor_id, 'rot', rot_value, dancers, locations, axes)
+            send_log_data(sensor_id, 'mag', mag_value, dancers, locations, axes)
+            send_log_data(sensor_id, 'ori', euler_value, dancers, locations, axes)
             
 def send_log_data(sensor_id, data_type, value, dancers, locations, axes):
     """send_log_data sends sensor data from a logfile to the dashboard
@@ -472,33 +454,33 @@ def send_log_data(sensor_id, data_type, value, dancers, locations, axes):
     # Set xyz coordinate data to their plots.
     if data_type in ['acc', 'gyr', 'mag']:
         for i, val in enumerate(value):
-            data_key = f'{data_type}_{axes[i]}'
-            dancers[d_idx][sensor_key][data_key].append(val)
-            cutoff = len(dancers[d_idx][sensor_key][data_key]) - 500
+            data_label = f'{data_type}_{axes[i]}'
+            dancers[d_idx][sensor_key][data_label].append(val)
+            cutoff = len(dancers[d_idx][sensor_key][data_label]) - 500
 
             if  cutoff > 0:
-                del dancers[d_idx][sensor_key][data_key][0]
+                del dancers[d_idx][sensor_key][data_label][0]
 
             dpg.configure_item(
                 f'{data_type}{d_idx}_{s_idx}{axes[i]}',
-                y = dancers[d_idx][sensor_key][data_key]
+                y = dancers[d_idx][sensor_key][data_label]
             )
     # Set Euler angles data to its plot.
     elif data_type == 'ori':
         dancers[d_idx][sensor_key][f'{data_type}_p'].append(value[0])
         dancers[d_idx][sensor_key][f'{data_type}_r'].append(value[1])
         dancers[d_idx][sensor_key][f'{data_type}_y'].append(value[2])
-        data_key = f'{data_type}_{pry}'
+        data_label = f'{data_type}_{pry}'
 
         for pry in ['p', 'r', 'y']:
-            cutoff = len(dancers[d_idx][sensor_key][data_key]) - 500
+            cutoff = len(dancers[d_idx][sensor_key][data_label]) - 500
 
             if cutoff > 0:
-                del dancers[d_idx][sensor_key][data_key][0]
+                del dancers[d_idx][sensor_key][data_label][0]
 
             dpg.configure_item(
                 f'{data_type}{d_idx}_{s_idx}{pry}',
-                y = dancers[d_idx][sensor_key][data_key]
+                y = dancers[d_idx][sensor_key][data_label]
             )
     # Set rate of turn data to its plot.
     elif data_type == 'rot':
