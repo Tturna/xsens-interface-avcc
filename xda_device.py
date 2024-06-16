@@ -347,7 +347,7 @@ class XdaDevice():
 
                     gyr = packet.calibratedGyroscopeData()
                     gyr_value = [gyr[0], gyr[1], gyr[2]]
-                    rot_value = self.sensors.scale_data( sensor_id, 'rot',
+                    rot_value = self.sensors.scale_data(sensor_id, 'rot',
                         [sqrt(gyr[0]**2 + gyr[1]**2 + gyr[2]**2)]
                     )
 

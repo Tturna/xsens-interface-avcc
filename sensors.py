@@ -237,13 +237,14 @@ class Sensors:
                     y = self.dancers[d_idx][sensor_key][f'b_{data_type}']
                 )
             elif self.dancers[d_idx][sensor_key][f'b_{data_type}'] == 1:
+                # TODO: Make sure the line below with "dancers.dancers" is not a bug (Tturna 2024.6.16)
                 dpg.configure_item(
                    f'b_{data_type}{d_idx}_{s_idx}',
                    y = self.dancers.dancers[d_idx][sensor_key][f'b_{data_type}']
                 )
 
     def calculate_mfcc(self, fs):
-        mfccAll =[]
+        mfccAll = []
 
         for dancer in self.dancers:
             for i in range(1, self.nSensors + 1):
@@ -258,6 +259,7 @@ class Sensors:
 
                     lenVec1 = len(dancer[sensor1][label])
                     
+                    # TODO: Invert if-statement to reduce nesting after making sure the app works.
                     #if it's an angle measure take the cosine before doing fft to eliminate discontinuity
                     if lenVec1 >= 32:
                         if 'ori' in label: 
@@ -295,6 +297,7 @@ class Sensors:
 
                     lenVec1 = len(dancer[sensor1][label])
                     
+                    # TODO: Invert if-statement to reduce nesting after making sure the app works.
                     #if it's an angle measure take the cosine before doing fft to eliminate discontinuity
                     if lenVec1 >= 32:
                         if 'ori' in label: 
@@ -312,7 +315,7 @@ class Sensors:
         #CORRELATIONS BETWEEN DIFFERENT SENSORS - SAME DANCER
         for dancer in self.dancers:
             for i in range(1, self.nSensors):
-                for j in range(i+1, self.nSensors+1):                
+                for j in range(i + 1, self.nSensors + 1):                
                     sensor1 = f'snsr_{i}'
                     sensor2 = f'snsr_{j}'
                     
@@ -326,6 +329,7 @@ class Sensors:
                         lenVec1 = len(dancer[sensor1][label])
                         lenVec2 = len(dancer[sensor2][label])
 
+                        # TODO: Invert if-statement to reduce nesting after making sure the app works.
                         if lenVec1 >= 32 and lenVec2 >= 32:
                             correlation = np.corrcoef(dancer[sensor1][label][lenVec1 - 32:lenVec1],
                                                       dancer[sensor2][label][lenVec2 - 32:lenVec2])
@@ -362,6 +366,7 @@ class Sensors:
                         lenVec1 = len(dancer1[sensor1][label])
                         lenVec2 = len(dancer2[sensor1][label])
 
+                        # TODO: Invert if-statement to reduce nesting after making sure the app works.
                         if lenVec1 >= 32 and lenVec2 >= 32:
                             correlation = np.corrcoef(dancer1[sensor1][label][lenVec1 - 32:lenVec1],
                                                       dancer2[sensor1][label][lenVec2 - 32:lenVec2])

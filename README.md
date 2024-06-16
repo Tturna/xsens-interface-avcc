@@ -1,4 +1,4 @@
-This is a fork of (Xsens-Interface)[https://github.com/Inertial-Sonification/XSens-Interface] which is a version of the (sonic move project)[https://github.com/jvkloc/sonic_move]. This version is tailored to work better with the systems and people in the AVCC (Audio-Visual Circuit Circus) department and the Retrocausality project. It also attempts to slightly improve the code to be more clear, readable, and less error prone.
+This is a fork of (Xsens-Interface)[https://github.com/Inertial-Sonification/XSens-Interface] which is a version of the (sonic move project)[https://github.com/jvkloc/sonic_move]. This version is tailored to work better with the systems in the AVCC (Audio-Visual Circuit Circus) department of the Retrocausality project. It also attempts to slightly improve the code to be more clear, readable, and less error prone.
 
 This README will be improved with actual usage instructions in the future.
 
