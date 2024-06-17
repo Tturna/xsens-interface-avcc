@@ -1,4 +1,4 @@
-# Sonic Move Biodata Sonata main script.
+import os
 import sys
 import logging
 import argparse
@@ -11,7 +11,6 @@ from osc4py3.as_eventloop import osc_startup, osc_udp_client, osc_udp_server
 
 import dashboard as db
 
-import os
 cwd = os.getcwd()
 
 #TODO insert GUI element for number of sensors and inserting/selecting sensor ID code (QR)
@@ -45,10 +44,9 @@ def osc(server_ip, server_port, client_ip, client_port):
 
 def osc_handler(acc, tot_acc, gyr, rot, mag, ori, mtw2_id):
     print(acc, tot_acc, gyr, rot, mag, ori, mtw2_id)
-
                                                     
 def main():
-    """Sonic Move Biodata sonata main script. 
+    """
     Arguments
     ---------
     server_ip : str
@@ -100,12 +98,11 @@ def main():
         sys.exit(1)
  
     try:
-        dashboard = db.Dashboard(args.device, Path(args.path))   
+        db.Dashboard(args.device, Path(args.path))   
     except Exception as e:
         print(f'{e}.\nDashboard setup failed. Aborting.')
         sys.exit(1)
  
-    print('\nStarting')
     dpg.setup_dearpygui()
     dpg.maximize_viewport()
     dpg.show_viewport()

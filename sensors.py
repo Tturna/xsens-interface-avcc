@@ -1,4 +1,3 @@
-# A class for Xsens sensors.
 # https://dearpygui.readthedocs.io/en/latest/
 import dearpygui.dearpygui as dpg
 from librosa.feature.spectral import mfcc
@@ -60,7 +59,6 @@ def dancers(number_of_dancers=2, number_of_sensors=2):
                         for dancer2_idx in range(len(dancers)):
                             if dancer2_idx == dancer1_idx: continue
                             dancer1[sens][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'] = [0] * 500
-            
     return dancers
 
 class Sensors:
@@ -262,26 +260,26 @@ class Sensors:
 
                     lenVec1 = len(dancer[sensor1][label])
                     
-                    # TODO: Invert if-statement to reduce nesting after making sure the app works.
                     #if it's an angle measure take the cosine before doing fft to eliminate discontinuity
-                    if lenVec1 >= 32:
-                        if 'ori' in label: 
-                            cc = mfcc(y = np.cos(2 * np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1])),
-                                      sr = fs,
-                                      n_fft = 32,
-                                      n_mfcc = 13)
-                        elif 'mag' in label:
-                            cc = mfcc(y = np.cos(2 * np.pi * (1.0 + np.asarray(dancer[sensor1][label][lenVec1-32:lenVec1]))),
-                                      sr = fs,
-                                      n_fft = 32,
-                                      n_mfcc = 13)
-                        else:
-                            cc = mfcc(y = dancer[sensor1][label][lenVec1 - 32:lenVec1],
-                                      sr = fs,
-                                      n_fft = 32,
-                                      n_mfcc = 13)
+                    if lenVec1 < 32: continue
 
-                        mfccAll.append(np.abs(cc))
+                    if 'ori' in label: 
+                        cc = mfcc(y = np.cos(2 * np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1])),
+                                  sr = fs,
+                                  n_fft = 32,
+                                  n_mfcc = 13)
+                    elif 'mag' in label:
+                        cc = mfcc(y = np.cos(2 * np.pi * (1.0 + np.asarray(dancer[sensor1][label][lenVec1-32:lenVec1]))),
+                                  sr = fs,
+                                  n_fft = 32,
+                                  n_mfcc = 13)
+                    else:
+                        cc = mfcc(y = dancer[sensor1][label][lenVec1 - 32:lenVec1],
+                                  sr = fs,
+                                  n_fft = 32,
+                                  n_mfcc = 13)
+
+                    mfccAll.append(np.abs(cc))
         return mfccAll
 
     def calculate_fft(self):
@@ -300,17 +298,17 @@ class Sensors:
 
                     lenVec1 = len(dancer[sensor1][label])
                     
-                    # TODO: Invert if-statement to reduce nesting after making sure the app works.
                     #if it's an angle measure take the cosine before doing fft to eliminate discontinuity
-                    if lenVec1 >= 32:
-                        if 'ori' in label: 
-                            fft = np.fft.rfft(np.cos(2 * np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1])))
-                        elif 'mag' in label:
-                            fft = np.fft.rfft(np.cos(2 * np.pi * (1.0 + np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1]))))
-                        else:
-                            fft = np.fft.rfft(dancer[sensor1][label][lenVec1 - 32:lenVec1])
+                    if lenVec1 < 32: continue
 
-                        fftAll.append(np.abs(fft))
+                    if 'ori' in label: 
+                        fft = np.fft.rfft(np.cos(2 * np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1])))
+                    elif 'mag' in label:
+                        fft = np.fft.rfft(np.cos(2 * np.pi * (1.0 + np.asarray(dancer[sensor1][label][lenVec1 - 32:lenVec1]))))
+                    else:
+                        fft = np.fft.rfft(dancer[sensor1][label][lenVec1 - 32:lenVec1])
+
+                    fftAll.append(np.abs(fft))
         return fftAll
 
     def calculate_correlation_self(self):
@@ -332,21 +330,21 @@ class Sensors:
                         lenVec1 = len(dancer[sensor1][label])
                         lenVec2 = len(dancer[sensor2][label])
 
-                        # TODO: Invert if-statement to reduce nesting after making sure the app works.
-                        if lenVec1 >= 32 and lenVec2 >= 32:
-                            correlation = np.corrcoef(dancer[sensor1][label][lenVec1 - 32:lenVec1],
-                                                      dancer[sensor2][label][lenVec2 - 32:lenVec2])
-                            corrVal = 0
+                        if lenVec1 < 32 or lenVec2 < 32: continue
 
-                            if not (np.isnan(correlation[1][0])):
-                                corrVal = correlation[1][0]
+                        correlation = np.corrcoef(dancer[sensor1][label][lenVec1 - 32:lenVec1],
+                                                  dancer[sensor2][label][lenVec2 - 32:lenVec2])
+                        corrVal = 0
 
-                            out_correlations.append([label,corrVal])
-                            dancer[sensor1][f'correlation_{label}'][sensor2].append(corrVal)
-                            cutoff = len(dancer[sensor1][f'correlation_{label}'][sensor2]) - 500
+                        if not (np.isnan(correlation[1][0])):
+                            corrVal = correlation[1][0]
 
-                            if cutoff> 0:
-                                del dancer[sensor1][f'correlation_{label}'][sensor2][0]
+                        out_correlations.append([label,corrVal])
+                        dancer[sensor1][f'correlation_{label}'][sensor2].append(corrVal)
+                        cutoff = len(dancer[sensor1][f'correlation_{label}'][sensor2]) - 500
+
+                        if cutoff> 0:
+                            del dancer[sensor1][f'correlation_{label}'][sensor2][0]
         return out_correlations
 
     def calculate_correlation_others(self):
@@ -369,21 +367,21 @@ class Sensors:
                         lenVec1 = len(dancer1[sensor1][label])
                         lenVec2 = len(dancer2[sensor1][label])
 
-                        # TODO: Invert if-statement to reduce nesting after making sure the app works.
-                        if lenVec1 >= 32 and lenVec2 >= 32:
-                            correlation = np.corrcoef(dancer1[sensor1][label][lenVec1 - 32:lenVec1],
-                                                      dancer2[sensor1][label][lenVec2 - 32:lenVec2])
-                            
-                            corrVal = 0
-                            if not (np.isnan(correlation[1][0])):
-                                corrVal = correlation[1][0]
+                        if lenVec1 < 32 or lenVec2 < 32: continue
 
-                            out_correlations.append([label,corrVal])
-                            dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'].append(corrVal)
-                            cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}']) - 500
+                        correlation = np.corrcoef(dancer1[sensor1][label][lenVec1 - 32:lenVec1],
+                                                  dancer2[sensor1][label][lenVec2 - 32:lenVec2])
+                        
+                        corrVal = 0
+                        if not (np.isnan(correlation[1][0])):
+                            corrVal = correlation[1][0]
 
-                            if cutoff> 0:
-                                del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'][0]
+                        out_correlations.append([label,corrVal])
+                        dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'].append(corrVal)
+                        cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}']) - 500
+
+                        if cutoff> 0:
+                            del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'][0]
         return out_correlations
 
     def status(self, ids=False, finished=False):
@@ -411,9 +409,9 @@ def plot_log(file_path, dancers, axes):
     locations = Sensors.locations
     
     # TODO: Surely this doesn't have to be so hard coded. (Tturna 2024.6.16)
-    with open(file_path, 'r') as log:
+    with open(file_path, 'r') as log_handle:
         sensor_id = None
-        for line in log.readlines():
+        for line in log_handle.readlines():
             split = line.split()
 
             if split[0] == '11:':
