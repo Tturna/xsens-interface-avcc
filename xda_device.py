@@ -241,9 +241,9 @@ class XdaDevice():
         log('program_status', f'Creating a log file for {self.serial}' +
             f' {self.device.deviceId()} and starting recording...\n')
 
-        log = str(Path(f'{self.log_path}\{self.device.deviceId()}_log.mtb'))
+        logPath = str(Path(f'{self.log_path}\{self.device.deviceId()}_log.mtb'))
 
-        if self.device.createLogFile(log) != xda.XRV_OK:
+        if self.device.createLogFile(logPath) != xda.XRV_OK:
             log('program_status', 'Failed to create a log file for' +
                 f' {self.serial} {self.device.deviceId()}. Aborting.\n')
             self.device.disableRadio()
@@ -398,7 +398,7 @@ class XdaDevice():
                         [(euler_value[0]), (euler_value[1]), (euler_value[2])]
                     )
 
-                message = oscbuildparse.OSCMessage('/xsens', None, osc_msg)
+                message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}', None, osc_msg)
                 osc_send(message, 'OSC_client')
 
                 try: osc_process()      
@@ -439,7 +439,7 @@ class XdaDevice():
                     for corr_value in correlations:
                         osc_msg.append(round(float(corr_value[1]), 5))       
 
-                    message = oscbuildparse.OSCMessage('/xsens-correlation-self', None, osc_msg)
+                    message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-self', None, osc_msg)
                     osc_send(message, 'OSC_client')
 
                     try: osc_process()      
@@ -495,7 +495,7 @@ class XdaDevice():
                     for corr_value in correlations:
                         osc_msg.append(round(float(corr_value[1]), 5))       
 
-                    message = oscbuildparse.OSCMessage('/xsens-correlation-others', None, osc_msg)
+                    message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-others', None, osc_msg)
                     osc_send(message, 'OSC_client')
 
                     try: osc_process()      
@@ -512,8 +512,8 @@ class XdaDevice():
             log_file = Path(f'{self.log_path}\{datetime.now().strftime("%d.%m.%Y-%H.%M.%S")}.txt')
             log_data = data_out.getvalue()
 
-            with open(log_file, 'w') as log:
-                log.write(log_data)
+            with open(log_file, 'w') as log_handle:
+                log_handle.write(log_data)
 
             log('program_status', f'Data from the recording was written to {log_file}')
 

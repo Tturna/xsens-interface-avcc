@@ -4,7 +4,7 @@ import dearpygui.dearpygui as dpg
 from librosa.feature.spectral import mfcc
 import numpy as np
 
-def dancers(number_of_dancers=1, number_of_sensors=3):
+def dancers(number_of_dancers=2, number_of_sensors=2):
     """dancers creates a list of dictionary of dictionaries for 
     sensor data of each Biodata Sonata dancer.
     Parameters
@@ -22,19 +22,21 @@ def dancers(number_of_dancers=1, number_of_sensors=3):
         for each data label.
     """
 
-    #TODO: make the initialization of dancers respect the number of sensors per dancer
-    dancers = [
-        {'snsr_1' : {} ,'snsr_2' : {}, 'snsr_3' : {}}
-        for _ in range(number_of_dancers)
-    ]
+    # These loops could be combined for possibly simpler code. (Tturna 2024.6.17)
+    dancers = []
+
+    for dancer_index in range(number_of_dancers):
+        dancers.append({})
+        for sensor_num in range(1, number_of_sensors + 1):
+            dancers[dancer_index][f'snsr_{sensor_num}'] = {}
 
     labels = ['tot_a', 'b_tot_a', 'rot', 'ori_p', 'ori_r', 'ori_y', 'acc_x', 'acc_y', 'acc_z', 'gyr_x','gyr_y','gyr_z', 'mag_x', 'mag_y', 'mag_z']
     
     # Length of data plots' x-axes is 500, initialise data as zeros.
-    for dancer in dancers:
+    for dancer1_idx, dancer1 in enumerate(dancers):
         for i in range(1, number_of_sensors + 1):
             for label in labels:
-                dancer[f'snsr_{i}'][label] = [0] * 500
+                dancer1[f'snsr_{i}'][label] = [0] * 500
 
             #dancer[f'snsr_{i}']['correlation_acc']={}
             #for j in range(1, number_of_sensors+1):
@@ -48,16 +50,16 @@ def dancers(number_of_dancers=1, number_of_sensors=3):
 
                 for label in labels:
                     for sens in [sensor1, sensor2]:
-                        if f'correlation_{label}' in dancer[sens]: continue
+                        if f'correlation_{label}' in dancer1[sens]: continue
 
-                        dancer[sens][f'correlation_{label}'] = {}
+                        dancer1[sens][f'correlation_{label}'] = {}
 
                         for jj in range(1, number_of_sensors + 1):
-                            dancer[sens][f'correlation_{label}'][f'snsr_{jj}'] = [0] * 500
+                            dancer1[sens][f'correlation_{label}'][f'snsr_{jj}'] = [0] * 500
 
-                        for dancer2 in dancers:
-                            if dancer2 == dancer: continue
-                            dancer[sens][f'correlation_{label}'][f'dancer_{jj}'] = [0] * 500
+                        for dancer2_idx in range(len(dancers)):
+                            if dancer2_idx == dancer1_idx: continue
+                            dancer1[sens][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'] = [0] * 500
             
     return dancers
 
@@ -65,9 +67,10 @@ class Sensors:
     # locations[x][1]: dancers 1, 2 and 3. This seems to be the dancer number. (Tturna 2024.6.16)
     # locations[x][2]: 1 for left, 2 for right, 3 for torso. This is the sensor number I guess.
     locations = {
-        '00B4F115' : ['left', 1, 1], # dancer 1 left etc.
-        '00B4F116' : ['right', 1, 2],
-        '00B4F11D'  : ['torso', 1, 3]
+        '00B4F114' : ['left', 1, 1], # dancer 1 left etc.
+        '00B4F115' : ['right', 1, 2],
+        '00B4F116'  : ['left', 2, 1],
+        '00B4F119'  : ['right', 2, 2]
         #'00B42D56' : ['left', 2, 1],
         #'00B42D32' : ['right', 2, 2],
         #'00B42D44' : ['torso', 2, 3],
@@ -349,9 +352,9 @@ class Sensors:
     def calculate_correlation_others(self):
         out_correlations = []
         #CORRELATIONS BETWEEN DIFFERENT SENSORS - SAME DANCER
-        for dancer1 in self.dancers:
-            for dancer2 in self.dancers:
-                if dancer1 == dancer2: continue
+        for dancer1_idx, dancer1 in enumerate(self.dancers):
+            for dancer2_idx, dancer2 in enumerate(self.dancers):
+                if dancer1_idx == dancer2_idx: continue
 
                 for i in range(1, self.nSensors):
                     sensor1 = f'snsr_{i}'
@@ -376,11 +379,11 @@ class Sensors:
                                 corrVal = correlation[1][0]
 
                             out_correlations.append([label,corrVal])
-                            dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2}'].append(corrVal)
-                            cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2}']) - 500
+                            dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'].append(corrVal)
+                            cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}']) - 500
 
                             if cutoff> 0:
-                                del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2}'][0]
+                                del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'][0]
         return out_correlations
 
     def status(self, ids=False, finished=False):

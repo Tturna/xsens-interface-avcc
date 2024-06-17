@@ -7,8 +7,7 @@ from pathlib import Path
 # https://dearpygui.readthedocs.io/en/latest/
 import dearpygui.dearpygui as dpg
 # https://osc4py3.readthedocs.io/en/latest/
-from osc4py3.as_eventloop import * 
-from osc4py3 import oscbuildparse
+from osc4py3.as_eventloop import osc_startup, osc_udp_client, osc_udp_server
 
 import dashboard as db
 
@@ -106,7 +105,7 @@ def main():
         print(f'{e}.\nDashboard setup failed. Aborting.')
         sys.exit(1)
  
-    print('Starting')
+    print('\nStarting')
     dpg.setup_dearpygui()
     dpg.maximize_viewport()
     dpg.show_viewport()
