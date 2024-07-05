@@ -433,17 +433,22 @@ class XdaDevice():
                         try: osc_process()      
                         except AttributeError: print("osc packet skipped")
                     '''
-                    osc_msg = []
-                    correlations = self.sensors.calculate_correlation_self()
+                    
+                    # CORRELATIONS
 
-                    for corr_value in correlations:
-                        osc_msg.append(round(float(corr_value[1]), 5))       
+                    # osc_msg = []
+                    # correlations = self.sensors.calculate_correlation_self()
 
-                    message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-self', None, osc_msg)
-                    osc_send(message, 'OSC_client')
+                    # for corr_value in correlations:
+                    #     osc_msg.append(round(float(corr_value[1]), 5))       
 
-                    try: osc_process()      
-                    except AttributeError: print("osc packet skipped")
+                    # message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-self', None, osc_msg)
+                    # osc_send(message, 'OSC_client')
+
+                    # try: osc_process()      
+                    # except AttributeError: print("osc packet skipped")
+
+                    # FFT
 
                     # osc_msg = []
                     # osc_msg_fft_stats = []
@@ -489,17 +494,19 @@ class XdaDevice():
                     # try: osc_process()      
                     # except AttributeError: print("osc packet skipped")
 
-                    osc_msg = []
-                    correlations = self.sensors.calculate_correlation_others()
+                    # CORRELATIONS OTHERS
 
-                    for corr_value in correlations:
-                        osc_msg.append(round(float(corr_value[1]), 5))       
+                    # osc_msg = []
+                    # correlations = self.sensors.calculate_correlation_others()
 
-                    message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-others', None, osc_msg)
-                    osc_send(message, 'OSC_client')
+                    # for corr_value in correlations:
+                    #     osc_msg.append(round(float(corr_value[1]), 5))       
 
-                    try: osc_process()      
-                    except AttributeError: print("osc packet skipped")
+                    # message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-others', None, osc_msg)
+                    # osc_send(message, 'OSC_client')
+
+                    # try: osc_process()      
+                    # except AttributeError: print("osc packet skipped")
 
             # Check sensor status and set it to the dashboard.
             self.sensors.status(self.sensors.sensors)

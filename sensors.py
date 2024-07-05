@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 from librosa.feature.spectral import mfcc
 import numpy as np
 
-def dancers(number_of_dancers=2, number_of_sensors=2):
+def dancers(number_of_dancers=3, number_of_sensors=3):
     """dancers creates a list of dictionary of dictionaries for 
     sensor data of each Biodata Sonata dancer.
     Parameters
@@ -65,10 +65,16 @@ class Sensors:
     # locations[x][1]: dancers 1, 2 and 3. This seems to be the dancer number. (Tturna 2024.6.16)
     # locations[x][2]: 1 for left, 2 for right, 3 for torso. This is the sensor number I guess.
     locations = {
-        '00B4F114' : ['left', 1, 1], # dancer 1 left etc.
-        '00B4F115' : ['right', 1, 2],
-        '00B4F116'  : ['left', 2, 1],
-        '00B4F119'  : ['right', 2, 2]
+        '00B4F11A' : ['left', 1, 1], # dancer 1 left etc.
+        # '00B4F114' : ['right', 1, 2],
+        '00B4F118' : ['right', 1, 2],
+        '00B4F115'  : ['torso', 1, 3],
+        '00B4F11B'  : ['left', 2, 1],
+        '00B4F116'  : ['right', 2, 2],
+        '00B4F119'  : ['torso', 2, 3],
+        '00B4F11C'  : ['left', 3, 1],
+        '00B4F107'  : ['right', 3, 2],
+        '00B4F11D'  : ['torso', 3, 3],
         #'00B42D56' : ['left', 2, 1],
         #'00B42D32' : ['right', 2, 2],
         #'00B42D44' : ['torso', 2, 3],
