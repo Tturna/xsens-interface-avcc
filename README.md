@@ -1,14 +1,33 @@
+# Xsens AVCC
+
 This is a fork of [Xsens-Interface](https://github.com/Inertial-Sonification/XSens-Interface) which is a version of the [sonic move project](https://github.com/jvkloc/sonic_move). This version is tailored to work better with the systems in the AVCC (Audio-Visual Circuit Circus) department of the Retrocausality project. It also attempts to slightly improve the code to be more clear, readable, and less error prone.
 
-This README will be improved with actual usage instructions in the future.
+## Installation
 
-// ORIGINAL Xsens-Interface README
+_This system is tested with Python 3.9. on Windows 10._
+
+1. If you haven't already, install Python.
+1. Install the required packages with `pip install -r requirements.txt`.
+1. Install the Xsens Device API using the instructions in the `wheels` directory.
+1. Create a directory called "lokit" in the root project directory for log files.
+
+## Usage
+
+Run `main.py` with the desired arguments. You can find the accepted arguments in the `main.py` file. Alternatively, you can change the default values and then run the script as is using the CLI or IDE of your choice.
+
+In most cases, the only relevant arguments are `device`, `client_ip`, and `client_port`. `device` should be set to match the type of sensor receiver that is used. `client_ip` and `client_port` define where to send sensor data via OSC.
+
+---
+
+<br>
+
+# ORIGINAL Xsens-Interface README
 
 Usage:
 
 After downloading this repo create a folder named "lokit" (folder where log files are stored) in the main folder (git doesn't track empty folders and all file types pertaining to log data are ignored)
 
-TODO: 
+TODO:
 
 - Make the number of sensors and number of dancers dynamic (with a menu selection for number of dancers and sensors - this can depend on the already stored list [read further in the next parenthesis]),
   certain methods already implement a dynamic creation of resources based on these parameters but most of the program is hard coded
@@ -16,13 +35,15 @@ TODO:
 - fix visualizaitons to respect ordering (draw data of the same sensor in the same row)
 - fix the visualization impossible to scroll to see all data plots on laptop monitors
 
+---
 
+<br>
 
-// ORIGINAL README:
+# ORIGINAL README:
 
 Python 3.9 program code for Sonic Move project and dance theatre Minimi's Biodata Sonata performance premiering 15.11.2023 in Kuopio City Theatre, Finland. Human motion data recording through Movella (Xsens) motion capture sensors connected to an Awinda USB Dongle or an Awinda Station, sending it to Open Sound Control environment and displaying the live data graphically. It is also possible to run live recordings again by using log files and the GUI.
 
-If you need to change one or more sensors, you can do it by editing `sensors.py` class dictionary `self.locations` starting from line 76. Also `plot_log()` - the last function of `sensors.py` - needs to be changed. The relevant section begins from line 277. 
+If you need to change one or more sensors, you can do it by editing `sensors.py` class dictionary `self.locations` starting from line 76. Also `plot_log()` - the last function of `sensors.py` - needs to be changed. The relevant section begins from line 277.
 
 Xsens Device API Linux and Windows Python wheel files with installation instructions are in the `wheels` folder.
 
