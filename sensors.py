@@ -66,8 +66,8 @@ class Sensors:
     # locations[x][2]: 1 for left, 2 for right, 3 for torso. This is the sensor number I guess.
     locations = {
         '00B4F11A' : ['left', 1, 1], # dancer 1 left etc.
-        # '00B4F114' : ['right', 1, 2],
-        '00B4F118' : ['right', 1, 2],
+        '00B4F114' : ['right', 1, 2],
+        # '00B4F118' : ['right', 1, 2],
         '00B4F115'  : ['torso', 1, 3],
         '00B4F11B'  : ['left', 2, 1],
         '00B4F116'  : ['right', 2, 2],
@@ -82,6 +82,10 @@ class Sensors:
         #'00B42D4E' : ['right', 3, 2],
         #'00B42B48' : ['torso', 3, 3]
     }
+
+    correlation_others_combos = [
+        (12, 22)
+    ]
 
     def __init__(self):
         """Parameters
@@ -355,45 +359,45 @@ class Sensors:
 
     def calculate_correlation_others(self):
         out_correlations = []
-        # TODO: Figure out how this works and how it SHOULD work.
-        # Currently this does not match any description I've heard for how
-        # "correlation others" should work. (Tturna -24.7.18)
-        for dancer1_idx, dancer1 in enumerate(self.dancers):
-            for dancer2_idx, dancer2 in enumerate(self.dancers):
 
-                # Temp thing to prevent useless computations
-                if dancer1_idx != 1: continue 
+        for (sensor1_label, sensor2_label) in Sensors.correlation_others_combos:
+            if sensor1_label == sensor2_label: continue
 
-                if dancer1_idx == dancer2_idx: continue
+            dancer1_idx = round(sensor1_label / 10)
+            dancer1 = self.dancers[dancer1_idx - 1]
+            sensor1_idx = sensor1_label % 10
+            sensor1 = f'snsr_{sensor1_idx}'
 
-                for i in range(1, self.nSensors):
-                    sensor1 = f'snsr_{i}'
-                    
-                    for label in dancer1[sensor1]:
-                        if (label == 'tot_a' or
-                            label == 'b_tot_a' or
-                            label == 'rot' or
-                            ('correlation' in label)):
-                            continue
-                        
-                        lenVec1 = len(dancer1[sensor1][label])
-                        lenVec2 = len(dancer2[sensor1][label])
+            dancer2_idx = round(sensor2_label / 10)
+            dancer2 = self.dancers[dancer2_idx - 1]
+            sensor2_idx = sensor2_label % 10
+            sensor2 = f'snsr_{sensor2_idx}'
 
-                        if lenVec1 < 32 or lenVec2 < 32: continue
+            for label in dancer1[sensor1]:
+                if (label == 'tot_a' or
+                    label == 'b_tot_a' or
+                    label == 'rot' or
+                    ('correlation' in label)):
+                    continue
+                
+                lenVec1 = len(dancer1[sensor1][label])
+                lenVec2 = len(dancer2[sensor2][label])
 
-                        correlation = np.corrcoef(dancer1[sensor1][label][lenVec1 - 32:lenVec1],
-                                                  dancer2[sensor1][label][lenVec2 - 32:lenVec2])
-                        
-                        corrVal = 0
-                        if not (np.isnan(correlation[1][0])):
-                            corrVal = correlation[1][0]
+                if lenVec1 < 32 or lenVec2 < 32: continue
 
-                        out_correlations.append([label,corrVal])
-                        dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'].append(corrVal)
-                        cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}']) - 500
+                correlation = np.corrcoef(dancer1[sensor1][label][lenVec1 - 32:lenVec1],
+                                            dancer2[sensor2][label][lenVec2 - 32:lenVec2])
+                
+                corrVal = 0
+                if not (np.isnan(correlation[1][0])):
+                    corrVal = correlation[1][0]
 
-                        if cutoff> 0:
-                            del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'][0]
+                out_correlations.append([label,corrVal])
+                dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'].append(corrVal)
+                cutoff = len(dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}']) - 500
+
+                if cutoff> 0:
+                    del dancer1[sensor1][f'correlation_{label}'][f'dancer_{dancer2_idx + 1}'][0]
         return out_correlations
 
     def status(self, ids=False, finished=False):
