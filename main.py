@@ -98,7 +98,7 @@ def main():
         sys.exit(1)
  
     try:
-        db.Dashboard(args.device, Path(args.path))   
+        db.Dashboard(args.device, Path(args.path))
     except Exception as e:
         print(f'{e}.\nDashboard setup failed. Aborting.')
         sys.exit(1)

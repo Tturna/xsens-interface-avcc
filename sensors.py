@@ -355,9 +355,15 @@ class Sensors:
 
     def calculate_correlation_others(self):
         out_correlations = []
-        #CORRELATIONS BETWEEN DIFFERENT SENSORS - SAME DANCER
+        # TODO: Figure out how this works and how it SHOULD work.
+        # Currently this does not match any description I've heard for how
+        # "correlation others" should work. (Tturna -24.7.18)
         for dancer1_idx, dancer1 in enumerate(self.dancers):
             for dancer2_idx, dancer2 in enumerate(self.dancers):
+
+                # Temp thing to prevent useless computations
+                if dancer1_idx != 1: continue 
+
                 if dancer1_idx == dancer2_idx: continue
 
                 for i in range(1, self.nSensors):

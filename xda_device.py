@@ -7,6 +7,7 @@ from time import time, sleep
 from datetime import datetime
 # from scipy.spatial.transform import Rotation as _rot
 import numpy as np
+import os.path
 
 # Xsens Device API documentation provided with SDK download:
 # https://www.movella.com/support/software-documentation
@@ -242,6 +243,12 @@ class XdaDevice():
             f' {self.device.deviceId()} and starting recording...\n')
 
         logPath = str(Path(f'{self.log_path}\{self.device.deviceId()}_log.mtb'))
+
+        if (not os.path.exists(self.log_path)):
+            log('program_status', f'Creating a log directory for {self.serial}' +
+                f' {self.device.deviceId()} at {logPath}')
+            
+            os.mkdir(self.log_path)
 
         if self.device.createLogFile(logPath) != xda.XRV_OK:
             log('program_status', 'Failed to create a log file for' +
@@ -496,17 +503,17 @@ class XdaDevice():
 
                     # CORRELATIONS OTHERS
 
-                    # osc_msg = []
-                    # correlations = self.sensors.calculate_correlation_others()
+                    osc_msg = []
+                    correlations = self.sensors.calculate_correlation_others()
 
-                    # for corr_value in correlations:
-                    #     osc_msg.append(round(float(corr_value[1]), 5))       
+                    for corr_value in correlations:
+                        osc_msg.append(round(float(corr_value[1]), 5))       
 
-                    # message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-others', None, osc_msg)
-                    # osc_send(message, 'OSC_client')
+                    message = oscbuildparse.OSCMessage(f'/xsens{dancer}{sensor}-correlation-others', None, osc_msg)
+                    osc_send(message, 'OSC_client')
 
-                    # try: osc_process()      
-                    # except AttributeError: print("osc packet skipped")
+                    try: osc_process()      
+                    except AttributeError: print("osc packet skipped")
 
             # Check sensor status and set it to the dashboard.
             self.sensors.status(self.sensors.sensors)
